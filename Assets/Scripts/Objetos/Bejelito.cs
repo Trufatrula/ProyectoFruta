@@ -89,4 +89,9 @@ public class Bejelito : MonoBehaviour, IGrabbable
                 break;
         }
     }
+
+    public void ActivarBejelito(bool activar)
+    {
+        bejelitoActivado = activar;
+    }
 }

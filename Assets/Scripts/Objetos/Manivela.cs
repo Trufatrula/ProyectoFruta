@@ -22,12 +22,28 @@ public class Manivela : MonoBehaviour, IInteractable
     private float velVolver = 5f;
 
     [SerializeField]
-    private UnityEvent eventoFinal;
+    private Transform puntoMirar;
+
+    [SerializeField]
+    private EstatuaParlanchina estatua;
+
+    //[SerializeField]
+    //private UnityEvent eventoFinal;
 
     private Quaternion rotacionInicial;
     private float rotacionActual;
     private bool manivelando = false;
     private bool inversidad = false;
+
+    private bool primerEncuentro = true;
+
+    private int dialogueIndex = 0;
+
+    [SerializeField]
+    private SocketPozo cubeta;
+
+    [SerializeField]
+    private List<GameObject> dialogos = new List<GameObject>();
 
     void Start()
     {
@@ -61,11 +77,64 @@ public class Manivela : MonoBehaviour, IInteractable
 
         MoverMovibles();
 
-        if (rotacionActual == anguloMax || (rotacionActual == 0 && inversidad))
+        if (manivelando && (rotacionActual == anguloMax || (rotacionActual == 0 && inversidad)))
         {
             manivelando = false;
             inversidad = !inversidad;
-            eventoFinal.Invoke();
+            Debug.Log(inversidad);
+
+            if(inversidad)
+            {
+                if(primerEncuentro)
+                {
+                    PrimerEncuentro();
+                    return;
+                }
+                CuboArriba();
+                return;
+            }
+            CuboAbajo();
+
+            //eventoFinal.Invoke();
+        }
+    }
+
+    private void PrimerEncuentro()
+    {
+        primerEncuentro = false;
+        GameManager.Instance.DialogueStarter(puntoMirar, 55, 0.25f, "POZO");
+        dialogos[dialogueIndex].SetActive(true);
+    }
+
+    private void CuboArriba()
+    {
+
+    }
+
+    private void CuboAbajo()
+    {
+        switch (cubeta.GetObjetoEnCubo())
+        {
+            case "CarneDeCiervo":
+                if(dialogueIndex == 1)
+                {
+                    GameManager.Instance.DialogueStarter(puntoMirar, 55, 0.25f, "POZO");
+                    dialogos[dialogueIndex].SetActive(true);
+                    cubeta.SustituirObjeto(false);
+                } else if(dialogueIndex == 2)
+                {
+                    GameManager.Instance.DialogueStarter(puntoMirar, 55, 0.25f, "POZO");
+                    dialogos[dialogueIndex].SetActive(true);
+                    cubeta.SustituirObjeto(true);
+                    estatua.SaltarAlDialogo(2);
+                }
+                break;
+            case "CarneDeOso":
+                break;
+            case "CarneHumana":
+                break;
+            default:
+                break;
         }
     }
 
@@ -90,5 +159,15 @@ public class Manivela : MonoBehaviour, IInteractable
     public void Unhighlight()
     {
         manivelando = false;
+    }
+
+    public void AvanzarDialogo()
+    {
+        dialogueIndex++;
+        TerminarDialogo();
+    }
+    public void TerminarDialogo()
+    {
+        GameManager.Instance.DialogueEnder();
     }
 }

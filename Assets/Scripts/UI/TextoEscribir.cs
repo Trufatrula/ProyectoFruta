@@ -53,8 +53,11 @@ public class TextoEscribir : MonoBehaviour
 
             if (i < fullText.Length && fullText[i] != '<')
             {
-                //audioSource.clip = kaySounds[Random.Range(0, kaySounds.Count)];
-                //audioSource.Play();
+                if(audioSource != null)
+                {
+                    audioSource.clip = kaySounds[Random.Range(0, kaySounds.Count)];
+                    audioSource.Play();
+                }
             }
 
             yield return new WaitForSeconds(delayEscribir);
@@ -67,7 +70,7 @@ public class TextoEscribir : MonoBehaviour
     public void CompleteSentence()
     {
         //textoAEscribir.text = texto;
-        //Debug.Log("Terminada");
+        //Debug.Log("Terminada");   
         OnTypingFinished?.Invoke(fullText);
     }
 }

@@ -36,6 +36,15 @@ public class CameraController : MonoBehaviour
     private Transform grabSpot;
     private IGrabbable grabbedObject;
 
+    private bool cambiarHerramienta = true;
+
+    [SerializeField]
+    private Transform herramientaSpot;
+    private IGrabbable grabbedHerramienta;
+
+    private HBrujula brujula;
+    private HPala pala;
+
     // Efecto andar provisional
     [SerializeField]
     private float andarSpeed = 2f;
@@ -46,7 +55,7 @@ public class CameraController : MonoBehaviour
 
     private float andarCycle = 0f; // Acumulacion de ciclo del seno
     private float andarCurrentOffset = 0f; // El offset aplicado actualmente
-    private float andarCurrentVel = 0f; // Used by SmoothDamp for a smooth stop
+    private float andarCurrentVel = 0f;
 
     private IInteractable selectedInteractable;
 
@@ -60,10 +69,10 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.R))
-        {
-            UnlockCamera();
-        }
+        //if(Input.GetKeyDown(KeyCode.R))
+        //{
+        //    UnlockCamera();
+        //}
         if(!isLocked)
         {
             float mouseX = Input.GetAxis("Mouse X");
@@ -99,6 +108,31 @@ public class CameraController : MonoBehaviour
                 grabbedObject = null;
             }
 
+            if((Input.GetAxis("Mouse ScrollWheel") != 0) && cambiarHerramienta && grabbedHerramienta != null)
+            {
+                cambiarHerramienta = false;
+                switch(grabbedHerramienta.ItemID)
+                {
+                    case "HBrujula":
+                        if (pala != null)
+                        {
+                            brujula.gameObject.SetActive(false);
+                            pala.gameObject.SetActive(true);
+                            grabbedHerramienta = pala.GetComponent<IGrabbable>();
+                        }
+                        break;
+                    case "HPala":
+                        if(brujula != null)
+                        {
+                            pala.gameObject.SetActive(false);
+                            brujula.gameObject.SetActive(true);
+                            grabbedHerramienta = brujula.GetComponent<IGrabbable>();
+                        }
+                        break;
+                }
+                cambiarHerramienta = true;
+            }
+
             if(Input.GetKeyDown(KeyCode.E))
             {
                 CheckInteraccionarV2();
@@ -126,7 +160,7 @@ public class CameraController : MonoBehaviour
 
         if (grabbedObject != null)
         {
-            Debug.Log(grabbedObject.GameObject.name + " HOLA");
+            Debug.Log(grabbedObject.GameObject.name + " intentar agarrar");
             Ray raySocket = realCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
             RaycastHit hitSocket;
             if (Physics.Raycast(raySocket, out hitSocket, interactRange, socketLayer))
@@ -336,6 +370,35 @@ public class CameraController : MonoBehaviour
 
     public bool TryGrabObject(IGrabbable grabbedObject)
     {
+        if(grabbedObject.ItemID.Equals("HBrujula"))
+        {
+            brujula = grabbedObject.GameObject.GetComponent<HBrujula>();
+            if(grabbedHerramienta != null)
+            {
+                if (!cambiarHerramienta) return false;
+                grabbedObject.GameObject.SetActive(false);
+            }
+            grabbedHerramienta = grabbedObject;
+            grabbedObject.GameObject.layer = 8;
+            grabbedObject.GameObject.transform.parent = herramientaSpot;
+            StartCoroutine(GrabHerramientaCoroutine());
+            return true;
+        }
+        else if(grabbedObject.ItemID.Equals("HPala"))
+        {
+            pala = grabbedObject.GameObject.GetComponent<HPala>();
+            if (grabbedHerramienta != null)
+            {
+                if (!cambiarHerramienta) return false;
+                grabbedObject.GameObject.SetActive(false);
+            }
+            grabbedHerramienta = grabbedObject;
+            grabbedObject.GameObject.layer = 8;
+            grabbedObject.GameObject.transform.parent = herramientaSpot;
+            StartCoroutine(GrabHerramientaCoroutine());
+            return true;
+        }
+
         if(this.grabbedObject == null && grabbedObject.IsGrabbable)
         {
             Debug.Log("HOLIWI");
@@ -352,17 +415,39 @@ public class CameraController : MonoBehaviour
         }
     }
 
-        private IEnumerator GrabObjectCoroutine()
+    private IEnumerator GrabObjectCoroutine()
+    {
+        Transform objTransform = grabbedObject.GameObject.transform;
+        while (Vector3.Distance(objTransform.localPosition, Vector3.zero) > 0.05f)
         {
-            Transform objTransform = grabbedObject.GameObject.transform;
-            while (Vector3.Distance(objTransform.localPosition, Vector3.zero) > 0.05f)
-            {
-                objTransform.localPosition = Vector3.MoveTowards(objTransform.localPosition, Vector3.zero, 10f * Time.deltaTime);
-
-                yield return null;
-            }
-            objTransform.localPosition = Vector3.zero;
+            objTransform.localPosition = Vector3.MoveTowards(objTransform.localPosition, Vector3.zero, 10f * Time.deltaTime);
+            yield return null;
         }
+        objTransform.localPosition = Vector3.zero;
+    }
+
+    private IEnumerator GrabHerramientaCoroutine()
+    {
+        Transform objTransform = grabbedHerramienta.GameObject.transform;
+        while (Vector3.Distance(objTransform.localPosition, Vector3.zero) > 0.05f)
+        {
+            objTransform.localPosition = Vector3.MoveTowards(objTransform.localPosition, Vector3.zero, 10f * Time.deltaTime);
+
+            yield return null;
+        }
+        objTransform.localPosition = Vector3.zero;
+        switch(grabbedHerramienta.ItemID)
+        {
+            case "HBrujula":
+                grabbedHerramienta.GameObject.GetComponent<HBrujula>().agarrada = true;
+                break;
+            case "HPala":
+                grabbedHerramienta.GameObject.GetComponent<HPala>().agarrada = true;
+                break;
+            default:
+                break;
+        }
+    }
 
     void OnApplicationFocus(bool hasFocus)
     {

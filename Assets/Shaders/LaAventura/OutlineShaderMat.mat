@@ -42,6 +42,6 @@ Material:
     - _OVERLAY: 0
     - _OverlayNosqeue: 0
     m_Colors:
-    - _OutlineColor: {r: 0.15860295, g: 1, b: 0, a: 0}
+    - _OutlineColor: {r: 0.49056602, g: 0.2073653, b: 0.18743324, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

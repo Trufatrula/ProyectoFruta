@@ -1,4 +1,3 @@
-using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -54,7 +53,7 @@ public class VigilanteDelPozo : MonoBehaviour, IHablable
         }
         else
         {
-            GameManager.Instance.DialogueStarter(cabeza, fovHablar, 1, "Vigilante");
+            GameManager.Instance.DialogueStarter(cabeza, fovHablar, 1, "Vigilante del pozo");
             dialogos[dialogueIndex].SetActive(true);
         }
     }
@@ -64,7 +63,7 @@ public class VigilanteDelPozo : MonoBehaviour, IHablable
         return dialogueIndex;
     }
 
-    public void AvanzarDialogoIndex()
+    public void AvanzarDialogoIndex(bool finalizar)
     {
         dialogueIndex++;
         TerminarDialogo();

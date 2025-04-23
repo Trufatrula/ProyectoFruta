@@ -31,7 +31,7 @@ public interface IHablable : IInteractable
 {
     void Hablar(IGrabbable hablarObject);
     int GetDialogoIndex();
-    void AvanzarDialogoIndex();
+    void AvanzarDialogoIndex(bool finalizar);
     void TerminarDialogo();
 }
 

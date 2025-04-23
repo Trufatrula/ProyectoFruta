@@ -4,13 +4,8 @@ using System.Collections.Generic;
 [RequireComponent(typeof(Rigidbody))]
 public class ConexionBejelito : MonoBehaviour
 {
-    [Tooltip("Maximum distance to connect with another balloon.")]
     public float maxDistance = 15f;
-
-    [Tooltip("Width of the connecting line.")]
     public float lineWidth = 0.1f;
-
-    [Tooltip("Material for the connection lines.")]
     public Material lineMaterial;
 
     private Dictionary<Transform, LineRenderer> connections = new Dictionary<Transform, LineRenderer>();
